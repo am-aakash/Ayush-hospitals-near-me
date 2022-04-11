@@ -17,48 +17,77 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   static const _initialCameraPosition = CameraPosition(
-    target: LatLng(23.251270, 77.473770),
+    // target: LatLng(23.251270, 77.473770),
+    target: LatLng(17.4435, 78.3772),
     zoom: 14.5,
   );
   Location currentLocation = Location();
 
   /// Set of displayed markers and cluster markers on the map
   final Set<Marker> _markers = {};
-  LatLng _center = LatLng(9.669111, 80.014007);
+  Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+  List<MarkerId> listMarkerIds = List<MarkerId>.empty(growable: true);
   bool isSearched = false;
 
   late GoogleMapController _googleMapController;
 
-  // void getLocation() async {
-  //   var location = await currentLocation.getLocation();
-  //   currentLocation.onLocationChanged.listen((LocationData loc) {
-  //     _googleMapController
-  //         .animateCamera(CameraUpdate.newCameraPosition(new CameraPosition(
-  //       target: LatLng(loc.latitude ?? 0.0, loc.longitude ?? 0.0),
-  //       zoom: 12.0,
-  //     )));
-  //     print(loc.latitude);
-  //     print(loc.longitude);
-  //     setState(() {
-  //       _markers.add(Marker(
-  //           markerId: MarkerId('Current'),
-  //           position: LatLng(loc.latitude ?? 0.0, loc.longitude ?? 0.0)));
-  //     });
-  //   });
-  // }
+  void _currentLocation() async {
+    var location = await currentLocation.getLocation();
+
+    _googleMapController.animateCamera(CameraUpdate.newCameraPosition(
+      CameraPosition(
+        bearing: 0,
+        target: LatLng(location.latitude!, location.longitude!),
+        zoom: 17.0,
+      ),
+    ));
+  }
 
   void _onMapCreated(GoogleMapController controller) {
     _googleMapController = controller;
 
-    // final marker = Marker(
-    //   markerId: MarkerId('place_name'),
-    //   // position: LatLng(23.207377),
-    //   // icon: BitmapDescriptor.,
-    //   infoWindow: InfoWindow(
-    //     title: 'title',
-    //     snippet: 'address',
-    //   ),
-    // );
+    MarkerId markerId1 = MarkerId("1");
+    MarkerId markerId2 = MarkerId("2");
+    MarkerId markerId3 = MarkerId("3");
+
+    listMarkerIds.add(markerId1);
+    listMarkerIds.add(markerId2);
+    listMarkerIds.add(markerId3);
+
+    Marker marker1 = Marker(
+      markerId: markerId1,
+      position: LatLng(17.4435, 78.3772),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan),
+      infoWindow: InfoWindow(
+          title: "Hytech City",
+          onTap: () {
+            // var bottomSheetController = scaffoldKey.currentState!
+            //     .showBottomSheet((context) => Container(
+            //           child: getBottomSheet("17.4435, 78.3772"),
+            //           height: 250,
+            //           color: Colors.transparent,
+            //         ));
+          },
+          snippet: "Snipet Hitech City"),
+    );
+
+    Marker marker2 = Marker(
+      markerId: markerId2,
+      position: LatLng(17.4837, 78.3158),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+    );
+    Marker marker3 = Marker(
+      markerId: markerId3,
+      position: LatLng(17.5169, 78.3428),
+      infoWindow:
+          InfoWindow(title: "Miyapur", onTap: () {}, snippet: "Miyapur"),
+    );
+
+    setState(() {
+      markers[markerId1] = marker1;
+      markers[markerId2] = marker2;
+      markers[markerId3] = marker3;
+    });
   }
 
   @override
@@ -89,29 +118,26 @@ class _HomePageState extends State<HomePage> {
                     height: SizeConfig.blockHeight * 92,
                     // Main map
                     child: GoogleMap(
-                      // myLocationButtonEnabled: true,
+                      myLocationButtonEnabled: false,
                       myLocationEnabled: true,
                       zoomControlsEnabled: true,
                       initialCameraPosition: _initialCameraPosition,
-                      onMapCreated: (controller) =>
-                          _googleMapController = controller,
-                      markers: _markers,
+                      onMapCreated: _onMapCreated,
+                      // markers: _markers,
+                      markers: Set<Marker>.of(markers.values),
                     ),
                   ),
                   Container(
                     height: SizeConfig.blockHeight * 8,
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      // borderRadius: BorderRadius.only(
-                      //   topRight: Radius.circular(10),
-                      //   topLeft: Radius.circular(10),
-                      // ),
-                      // border: Border(
-                      //   top: BorderSide(
-                      //     color: Colors.red,
-                      //     width: 3,
-                      //   ),
-                      // ),
+                      // borderRadius: BorderRadius.all(Radius.circular(8)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 2.0,
+                        ),
+                      ],
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -140,6 +166,33 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
               Positioned(
+                top: SizeConfig.blockHeight * 15,
+                right: SizeConfig.blockWidth * 5,
+                child: InkWell(
+                  onTap: () {
+                    _currentLocation();
+                  },
+                  child: Container(
+                    height: SizeConfig.blockHeight * 6,
+                    width: SizeConfig.blockHeight * 6,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      boxShadow: [
+                        new BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 3.0,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.location_on,
+                      // size: SizeConfig.blockHeight * 0.4,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
                 bottom: 0,
                 left: SizeConfig.blockWidth * 40,
                 child: InkWell(
@@ -157,6 +210,12 @@ class _HomePageState extends State<HomePage> {
                       borderRadius: BorderRadius.all(
                         Radius.circular(SizeConfig.blockWidth * 20),
                       ),
+                      // boxShadow: [
+                      //   BoxShadow(
+                      //     color: Colors.black12,
+                      //     blurRadius: 2.0,
+                      //   ),
+                      // ],
                     ),
                     child: Center(
                       child: (isSearched)
@@ -242,6 +301,12 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.white,
                           borderRadius: BorderRadius.all(Radius.circular(8)),
                           // border: Border.all(color: COLORS.black),
+                          boxShadow: [
+                            new BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 3.0,
+                            ),
+                          ],
                         ),
                         child: Icon(Icons.mic),
                       ),
